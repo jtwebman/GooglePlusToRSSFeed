@@ -64,7 +64,7 @@ http.createServer(function(req, serverResponse) {
       serverResponse.writeHead(200, { 'content-type': 'text/html' });
       serverResponse.write("<html><head><title>Google+ to RSS Feed</title></head><body>");
       serverResponse.write("<h1>Google+ to RSS Feed</h1>");
-      serverResponse.write("<p>Just add your google user id to this url like this http://googleplus2rss.nodester.com/12345678901234567890 and it will give you your feed.</p>");
+      serverResponse.write("<p>Just add your google user id to this url like this http://googleplustorss.nodester.com/12345678901234567890 and it will give you your feed.</p>");
       serverResponse.end("</body></html>");
     }
   } catch (ex) {
