@@ -1,7 +1,7 @@
 var http = require('sys');
 var http = require('http');
 var https = require('https');
-var RSS = require('rss');
+var RSS = require('./rss');
 
 var reId = new RegExp(/\/(\d+)$/);
 
@@ -74,4 +74,4 @@ http.createServer(function(req, serverResponse) {
       serverResponse.write("<p>We got the following error getting the feed: " + ex.toString() + "</p>");
       serverResponse.end("</body></html>");
   }
-}).listen(8000);
+}).listen(11825);
