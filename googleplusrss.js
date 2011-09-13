@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-var http = require('http');
-http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Hello World\nApp (googleplusrss) is running..');
-}).listen(11908);
-=======
 var http = require('sys');
 var http = require('http');
 var https = require('https');
@@ -81,5 +74,5 @@ http.createServer(function(req, serverResponse) {
       serverResponse.write("<p>We got the following error getting the feed: " + ex.toString() + "</p>");
       serverResponse.end("</body></html>");
   }
-}).listen(11825);
+}).listen(11908);
 >>>>>>> 48ed456dfd7941268c51b4239f06a4d86645eec9
