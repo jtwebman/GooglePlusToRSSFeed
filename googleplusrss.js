@@ -2,6 +2,7 @@ var http = require('sys');
 var http = require('http');
 var https = require('https');
 var RSS = require('./rss');
+var cache = require('./cache');
 
 var reId = new RegExp(/\/(\d+)$/);
 
@@ -12,54 +13,64 @@ http.createServer(function(req, serverResponse) {
     if (m != null) { //Url has the id so send back rss feed
       serverResponse.writeHead(200, { 'content-type': 'application/rss+xml' });
       var googleId = m[1];
-      var data = [];
+      console.log("googleId:" + googleId);
+      var cacheFeed = cache.get(googleId);
+      if (cacheFeed != null) {
+        console.log("Read from cache: " + googleId);
+        serverResponse.end(cacheFeed);
+      } else {
 
-      var options = {
-        host: 'plus.google.com',
-        port: 443,
-        path: '/_/stream/getactivities/?&sp=[1,2,"'+googleId+'",null,null,40,null,"social.google.com",[]]',
-        method: 'GET',
-        headers: {
-          'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0a2) Gecko/20110613 Firefox/6.0a2',
-          'Connection':'keep-alive'
-        }
-      };
-
-      var googleReq = https.request(options, function(googleResponse) {
-        googleResponse.on('data', function(d) {
-          data.push(d);
-        });
-        googleResponse.on('end', function() {
-          var results = data.join('');
-
-          results = results.replace(")]}'","");
-          results = results.replace(/\[,/g, '["",');
-          results = results.replace(/,,/g, ',"",');
-          results = results.replace(/,,/g, ',"",');
-
-          var p = JSON.parse(results);
-          var post = p[1][0];
-          var authorName = post[0][3].toString();
-
-          var feed = new RSS({
-            title: authorName + "'s Google+ Public Feed",
-            feed_url: 'http://plus.google.com/' + googleId + '/posts',
-            site_url: 'http://plus.google.com',
-            author: authorName
-          });
-          
-          for (i=0;i<post.length;i++)
-          {
-            feed.item({
-                title:  post[i][4].toString(),
-                url: 'https://plus.google.com/' + post[i][21].toString(), // link to the item
-                date: new Date(post[i][5]) // any format that js Date can parse.
-            });
+        var options = {
+          host: 'plus.google.com',
+          port: 443,
+          path: '/_/stream/getactivities/?&sp=[1,2,"'+googleId+'",null,null,40,null,"social.google.com",[]]',
+          method: 'GET',
+          headers: {
+            'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0a2) Gecko/20110613 Firefox/6.0a2',
+            'Connection':'keep-alive'
           }
-          serverResponse.end(feed.xml());
-        });	
-      });
-      googleReq.end();
+        };
+
+        var googleReq = https.request(options, function(googleResponse) {
+          var data = [];
+          googleResponse.on('data', function(d) {
+            data.push(d);
+          });
+          googleResponse.on('end', function() {
+            var results = data.join('');
+
+            results = results.replace(")]}'","");
+            results = results.replace(/\[,/g, '["",');
+            results = results.replace(/,,/g, ',"",');
+            results = results.replace(/,,/g, ',"",');
+
+            var p = JSON.parse(results);
+            var post = p[1][0];
+            var authorName = post[0][3].toString();
+
+            var feed = new RSS({
+              title: authorName + "'s Google+ Public Feed",
+              feed_url: 'http://plus.google.com/' + googleId + '/posts',
+              site_url: 'http://plus.google.com',
+              author: authorName
+            });
+            
+            for (i=0;i<post.length;i++)
+            {
+              feed.item({
+                  title:  post[i][4].toString(),
+                  url: 'https://plus.google.com/' + post[i][21].toString(), // link to the item
+                  date: new Date(post[i][5]) // any format that js Date can parse.
+              });
+            }
+            var feed = feed.xml();
+            cache.put(googleId, feed, 300000) //Cache for 5 minutes
+            console.log("Pulled from google: " + googleId);
+            serverResponse.end(feed);
+          });	
+        });
+        googleReq.end();
+      }
     } else { //Else output directions
       serverResponse.writeHead(200, { 'content-type': 'text/html' });
       serverResponse.write("<html><head><title>Google+ to RSS Feed</title></head><body>");
