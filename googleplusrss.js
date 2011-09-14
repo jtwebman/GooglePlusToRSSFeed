@@ -1,7 +1,7 @@
 var http = require('sys');
 var http = require('http');
 var https = require('https');
-var RSS = require('./rss');
+var RSS = require('rss');
 var cache = require('./cache');
 
 var reId = new RegExp(/\/(\d+)$/);
