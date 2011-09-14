@@ -74,7 +74,16 @@ http.createServer(function(req, serverResponse) {
       serverResponse.writeHead(200, { 'content-type': 'text/html' });
       serverResponse.write("<html><head><title>Google+ to RSS Feed</title></head><body>");
       serverResponse.write("<h1>Google+ to RSS Feed</h1>");
-      serverResponse.write("<p>Just add your google user id to this url like this http://googleplus2rss.nodester.com/12345678901234567890 and it will give you your feed.</p>");
+      serverResponse.write("<p>Just add your google user id to this url like this http://googleplus2rss.nodester.com/118004117219257714873 and it will give you your raw rss feed. You can get your user id by logging into your Google+ account and clicking on your name. The url in the browse will have a long number which is your user id.</p>");
+      serverResponse.write("<p>This still is a beta site so it might go down from time to time. If you have any issues please submit a issue to <a href='https://github.com/jtwebman/GooglePlusToRSSFeed/issues'>Github Issues</a></p>");
+      serverResponse.write("<p><b>Current Working On:</b></p>");
+      serverResponse.write("<ul>");
+      serverResponse.write("<li>Fixing links and videos with no text with them.</li>");
+      serverResponse.write("<li>Adding a full express site with more detailed help.</li>");
+      serverResponse.write("<li>Limits so we don't get kicked from nodester.com, it's free thanks guys!</li>");
+      serverResponse.write("<li>A job doing Node.js so I can stop wasting my time with M$ programming. :)</li>");
+      serverResponse.write("</ul>");
+      serverResponse.write("<p>Thanks for taking a look! JTWebMan</p>");
       serverResponse.end("</body></html>");
     }
   } catch (ex) {
@@ -82,6 +91,7 @@ http.createServer(function(req, serverResponse) {
       serverResponse.write("<html><head><title>Google+ to RSS Feed</title></head><body>");
       serverResponse.write("<h1>Google+ to RSS Feed Error</h1>");
       serverResponse.write("<p>We got the following error getting the feed: " + ex.toString() + "</p>");
+      serverResponse.write("<p>This still is a beta site so it might go down from time to time. If you have any issues please submit a issue to <a href='https://github.com/jtwebman/GooglePlusToRSSFeed/issues'>Github Issues</a></p>");
       serverResponse.end("</body></html>");
   }
 }).listen(11908);
