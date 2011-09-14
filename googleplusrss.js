@@ -74,7 +74,7 @@ http.createServer(function(req, serverResponse) {
       serverResponse.writeHead(200, { 'content-type': 'text/html' });
       serverResponse.write("<html><head><title>Google+ to RSS Feed</title></head><body>");
       serverResponse.write("<h1>Google+ to RSS Feed</h1>");
-      serverResponse.write("<p>Just add your google user id to this url like this http://googleplus2rss.nodester.com/118004117219257714873 and it will give you your raw rss feed. You can get your user id by logging into your Google+ account and clicking on your name. The url in the browse will have a long number which is your user id.</p>");
+      serverResponse.write("<p>Just add your google user id to this url like this <a href='http://googleplus2rss.nodester.com/118004117219257714873'>http://googleplus2rss.nodester.com/118004117219257714873</a> and it will give you your raw rss feed. You can get your user id by logging into your Google+ account and clicking on your name. The url in the browse will have a long number which is your user id.</p>");
       serverResponse.write("<p>This still is a beta site so it might go down from time to time. If you have any issues please submit a issue to <a href='https://github.com/jtwebman/GooglePlusToRSSFeed/issues'>Github Issues</a></p>");
       serverResponse.write("<p><b>Current Working On:</b></p>");
       serverResponse.write("<ul>");
