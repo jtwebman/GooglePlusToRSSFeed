@@ -13,7 +13,6 @@ http.createServer(function(req, serverResponse) {
     if (m != null) { //Url has the id so send back rss feed
       serverResponse.writeHead(200, { 'content-type': 'application/rss+xml' });
       var googleId = m[1];
-      console.log("googleId:" + googleId);
       var cacheFeed = cache.get(googleId);
       if (cacheFeed != null) {
         console.log("Read from cache: " + googleId);
