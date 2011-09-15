@@ -16,7 +16,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 app.configure(function(){
-  app.use(express.logger());
+  //app.use(express.logger());
   app.use(express.static(__dirname + '/static'));
   //app.use(express.errorHandler({ dumbExceptions: true, showStack: true }));
 });
@@ -154,6 +154,9 @@ function sendRSSfeed(serverResponse, googleResults, googleId) {
           postdescription = postdescription + POST_HTML + "<br /><br />";
         }
         if (LINK_NAME != null && LINK_NAME != '' && LINK_URL != null && LINK_URL  != '') {
+          if (posttitle == null || posttitle == '') { // Set title to link name if no text was givin for the post.
+            posttitle = LINK_NAME;
+          }
           postdescription = postdescription + "<a href='" + LINK_URL + "'>" + LINK_NAME + "</a><br />";
         }
         if (IMAGE_URL != null && IMAGE_URL != '') {
