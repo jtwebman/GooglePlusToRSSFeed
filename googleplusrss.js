@@ -26,6 +26,7 @@ app.get(/\/(\d+)$/, function(req, res){
   var googleId = req.params[0];
   var cacheFeed = cache.get(googleId);
   if (cacheFeed != null) { //cached version found so just return that
+    res.writeHead(200, { 'content-type': 'application/rss+xml' });
     res.end(cacheFeed);
   } else { //No cached version so make a request to google.
     var googleReq = https.request(getGoogleOptions(googleId), function(googleResponse) {
