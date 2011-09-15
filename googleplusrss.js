@@ -232,12 +232,13 @@ function sendRootPage(serverResponse) {
   serverResponse.write("<p>Just add your google user id to this url like this <a href='http://googleplusrss.nodester.com/118004117219257714873'>http://googleplusrss.nodester.com/118004117219257714873</a> and it will give you your raw rss feed. You can get your user id by logging into your Google+ account and clicking on your name. The url in the browse will have a long number which is your user id.</p>");
   serverResponse.write("<p>This still is a beta site so it might go down from time to time. If you have any issues please submit a issue to <a href='https://github.com/jtwebman/GooglePlusToRSSFeed/issues'>Github Issues</a></p>");
   serverResponse.write("<p><b>Current Working On:</b></p>");
-  serverResponse.write("<ul>");
-  serverResponse.write("<li>Fixing links and videos with no text with them.</li>");
+  serverResponse.write("<ol>");
+  serverResponse.write("<li><del>Fixing links and videos with no text with them.</del></li>");
+  serverResponse.write("<li><del>Make all posts look close to how google+ displays them.</del></li>");
   serverResponse.write("<li>Adding a full express site with more detailed help.</li>");
   serverResponse.write("<li>Limits so we don't get kicked from nodester.com, it's free thanks guys!</li>");
   serverResponse.write("<li>A job doing Node.js so I can stop wasting my time with M$ programming. :)</li>");
-  serverResponse.write("</ul>");
+  serverResponse.write("</ol>");
   serverResponse.write("<p>Thanks for taking a look! JTWebMan</p>");
   serverResponse.end("</body></html>");
 }
