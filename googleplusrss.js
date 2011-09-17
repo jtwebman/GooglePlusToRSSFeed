@@ -5,10 +5,7 @@ var RSS = require('rss');
 var cache = require('./cache');
 var url = require('url');
 var express = require('express');
-
-//var reId = new RegExp(/\/(\d+)$/);
-
-
+var analitics = require('./analitics');
 
 var app = require('express').createServer();
 
@@ -23,6 +20,7 @@ app.configure(function(){
 
 
 app.get(/\/(\d+)$/, function(req, res){
+  analitics.track(req);
   var googleId = req.params[0];
   var cacheFeed = cache.get(googleId);
   if (cacheFeed != null) { //cached version found so just return that
@@ -233,7 +231,7 @@ function displayErrorPage(msg, res) {
   res.render('404', { errorMsg: msg});
 }
 
-PostTypeEnum = {
+var PostTypeEnum = {
         Plain : 0,
         Link : 1,
         YouTube : 2,
