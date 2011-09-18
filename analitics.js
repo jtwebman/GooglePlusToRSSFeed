@@ -1,5 +1,5 @@
 /* Replace this with your mobile id */
-var googleAccount = 'MO-23159838-3';
+var googleAccount = 'UA-23159838-3';
 /*****************************/
 
 var querystring = require('querystring');
@@ -9,7 +9,7 @@ var crypto = require('crypto');
 exports.track = function(req) {
   http.request(getOptions(req), function(res) {
     //Do nothing just make the response blindly :)
-  });
+  }).end();
 };
 
 exports._options = function(req) {
