@@ -20,17 +20,21 @@ app.configure(function(){
 
 
 app.get(/\/(\d+)$/, function(req, res){
-  analitics.track(req);
-  var googleId = req.params[0];
-  var cacheFeed = cache.get(googleId);
-  if (cacheFeed != null) { //cached version found so just return that
-    res.writeHead(200, { 'content-type': 'application/rss+xml' });
-    res.end(cacheFeed);
-  } else { //No cached version so make a request to google.
-    var googleReq = https.request(getGoogleOptions(googleId), function(googleResponse) {
-      handleGooglesResponse(res, googleResponse, googleId);
-    });
-    googleReq.end();
+  try {
+    analitics.track(req);
+    var googleId = req.params[0];
+    var cacheFeed = cache.get(googleId);
+    if (cacheFeed != null) { //cached version found so just return that
+      res.writeHead(200, { 'content-type': 'application/rss+xml' });
+      res.end(cacheFeed);
+    } else { //No cached version so make a request to google.
+      var googleReq = https.request(getGoogleOptions(googleId), function(googleResponse) {
+        handleGooglesResponse(res, googleResponse, googleId);
+      });
+      googleReq.end();
+    }
+  } catch (ex) {
+    displayErrorPage(ex, serverResponse);
   }
 });
 
@@ -42,6 +46,7 @@ app.error(function(ex, req, res, next){
   displayErrorPage(ex, res);
 });
 
+//app.listen('/tmp/googleplusrss_node.socket');
 app.listen(11908);
 
 function getGoogleOptions(googleId) {
