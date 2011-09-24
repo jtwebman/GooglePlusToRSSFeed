@@ -1,5 +1,5 @@
 /* Replace this with your mobile id */
-var googleAccount = 'UA-23159838-3';
+var googleAccount = 'MO-23159838-3';
 /*****************************/
 
 var querystring = require('querystring');
@@ -48,10 +48,11 @@ function googleAnalyticsGetImageUrl(req) {
 }
 
 function getVistorId(req) {
-  return '0x' + crypto.createHash('md5')
+  var vistorId = '0x' + crypto.createHash('md5')
             .update(req.headers['user-agent'] + getRandomNumber().toString())
             .digest('hex').toString()
             .substring(0,16)
+  return vistorId
 }
 
 function getRandomNumber() {
