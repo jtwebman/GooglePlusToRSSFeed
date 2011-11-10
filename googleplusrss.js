@@ -53,7 +53,7 @@ function getGooglePlusListOptions(googleId) {
   return {
           host: 'www.googleapis.com',
           port: 443,
-          path: '/plus/v1/people/'+googleId+'/activities/public?key=AIzaSyBx1DExRwKKMsyjNyfO-5LVzBnaTSVSmp8',
+          path: '/plus/v1/people/'+googleId+'/activities/public?key=AIzaSyBx1DExRwKKMsyjNyfO-5LVzBnaTSVSmp8&maxResults=15',
           method: 'GET',
           headers: {
             'Connection':'keep-alive'
@@ -82,7 +82,7 @@ function handleGooglesListResponse(serverResponse, googleListResponse, googleId)
     googleListResponse.on('end', function() {
       //output directions status code other then 200 came back from google
       if (googleListResponse.statusCode != 200) { 
-        displayErrorPage("Google sent back a status code of: " + googleListResponse.statusCode, serverResponse);
+        displayErrorPage("Google Activity List sent back a status code of: " + googleListResponse.statusCode, serverResponse);
       } else {
         sendRSSfeed(serverResponse, data.join(''), googleId)
       }
@@ -97,44 +97,170 @@ function sendRSSfeed(serverResponse, googleListResults, googleId) {
   try {
     var googleFeed = JSON.parse(googleListResults);
     
-    var authorName = googleFeed.items[0].actor.displayName;
-    console.log(googleFeed.items.length);
+    var authorName = 'Unknown';
+    if (googleFeed.items.length > 0) {
+      authorName = googleFeed.items[0].actor.displayName;
+    }
 
-    var feed = new RSS({
+    var rssfeed = new RSS({
       title: googleFeed.title,
       feed_url: 'http://plus.google.com/' + googleId + '/posts',
       site_url: 'http://plus.google.com',
       author: authorName
     });
 
-    for (i=0;i<googleFeed.items.length;i++)
-    {
-      feed.item({
-          title:  googleFeed.items[i].title,
-          description: '',
-          url: googleFeed.items[i].url,
-          date: googleFeed.items[i].updated
-      });
+    if (googleFeed.items.length > 0) {
+      getFeedItem(serverResponse, googleFeed, rssfeed, googleId, 0);
+    } else {
+      cacheAndReturnFeed(rssfeed);
     }
-    var feed = feed.xml();
-
-    cache.put(googleId, feed, 300000) //Cache for 5 minutes
-
-    serverResponse.writeHead(200, { 'content-type': 'application/rss+xml' });
-    serverResponse.end(feed);
   } catch (ex) {
     displayErrorPage(ex.toString(), serverResponse);
   }
 }
 
+function cacheAndReturnFeed(serverResponse, rssfeed, googleId) {
+  var feedXml = rssfeed.xml();
+  cache.put(googleId, feedXml, 300000) //Cache for 5 minutes
+
+  serverResponse.writeHead(200, { 'content-type': 'application/rss+xml' });
+  serverResponse.end(feedXml);
+}
+
+function getFeedItem(serverResponse, googleFeed, rssfeed, googleId, index) {
+  try {
+    if (googleFeed.items.length > index) { //Add feed item and call next
+      var googleReq = https.request(
+            getGooglePlusGetOptions(googleFeed.items[index].id), 
+            function(googleGetResponse) {
+              handleGooglesGetResponse(serverResponse, googleGetResponse, 
+                    googleFeed, rssfeed, googleId, index);
+            });
+      googleReq.end();
+    } else { //At the end cache and return feed
+      cacheAndReturnFeed(serverResponse, rssfeed, googleId);
+    }
+  } catch (ex) {
+    displayErrorPage(ex.toString(), serverResponse);
+  }
+}
+
+function handleGooglesGetResponse(serverResponse, googleGetResponse, googleFeed, rssfeed, googleId, index) {
+  try {
+    var data = [];
+    googleGetResponse.on('data', function(d) {
+      data.push(d);
+    });
+    googleGetResponse.on('end', function() {
+      //output directions status code other then 200 came back from google
+      if (googleGetResponse.statusCode != 200) { 
+        displayErrorPage("Google Activity Get sent back a status code of: " + googleGetResponse.statusCode, serverResponse);
+      } else {
+        addFeedItem(serverResponse, data.join(''), googleFeed, rssfeed, googleId, index)
+      }
+    });	
+  } catch (ex) {
+    displayErrorPage(ex, serverResponse);
+  }
+}
+
+function addFeedItem(serverResponse, googleGetResponse, googleFeed, rssfeed, googleId, index) {
+  try {
+    var activity = JSON.parse(googleGetResponse);
+    //if (index == 1 ) { console.log(activity); }
+    rssfeed.item({
+        title: getTitleText(activity),
+        description: getDescriptionHTML(activity, index),
+        url: activity.url,
+        date: activity.updated
+    });
+    getFeedItem(serverResponse, googleFeed, rssfeed, googleId, index + 1);
+  } catch (ex) {
+    displayErrorPage(ex, serverResponse);
+  }
+}
+
+function getTitleText(activity) {
+  if (activity.annotation != undefined) {
+    if (activity.annotation.length > 100) {
+      return activity.annotation.substr(0, 97) + '...'
+    } else {
+      return activity.annotation;
+    }
+  } else {
+    if (activity.title.length > 100) {
+      return activity.title.substr(0, 97) + '...'
+    } else {
+      return activity.title;
+    }
+  }
+}
+
+function getDescriptionHTML(activity, index) {
+  var html = '';
+
+  if (activity.annotation != undefined && activity.annotation.replace(/\s/g,"") !== "") {
+    html += '<div id="annotation">' + activity.annotation + '</div>';
+  }
+
+  if (activity.object.objectType == 'note') {
+    html += '<div id="content">' + activity.object.content + '</div>';
+    if (activity.object.attachments != undefined) {
+      for (i=0; i<activity.object.attachments.length; i++) {
+        html += getAttachmentHTML(activity.object.attachments[i], i);
+      }
+    }
+  }
+
+  if (activity.object.objectType == 'activity') {
+    html += '<br />';
+    html += '<div id="shared">';
+    html += '<div id="sharedBy"><a href="'+activity.object.actor.url+'">'+activity.object.actor.displayName+'</a> originally shared this post:</div>';
+    html += '<div id="content">'+activity.object.content+'</div>';
+
+    if (activity.object.attachments != undefined) {
+      for (i=0; i<activity.object.attachments.length; i++) {
+        html += getAttachmentHTML(activity.object.attachments[i], i);
+      }
+    }
+
+    html += '</div>';
+  } 
+
+  return html;
+}
+
+function getAttachmentHTML(attachment, index) {
+  var html = '';
+
+  html += '<div id="attachment'+index+'">';
+
+  if (attachment.displayName != undefined && attachment.displayName.replace(/\s/g,"") !== "") {
+    html += '<div id="displayName"><a href="'+attachment.url+'">'+attachment.displayName+'</a></div>'
+  }
+
+  if (attachment.objectType == 'video') {
+    html += '<a href="'+attachment.url+'"><img src="'+attachment.image.url+'" width="600" alt="video image" border="0" /></a>';
+  }
+
+  if (attachment.objectType == 'photo') {
+    var width = attachment.image.width;
+
+    if(width > 600) { width = 600; }
+
+    html += '<a href="'+attachment.image.url+'"><img src="'+attachment.image.url+'" width="'+width+'" alt="photo" border="0" /></a>';
+  }
+
+  if (attachment.content != undefined && attachment.content.replace(/\s/g,"") !== "") {
+    html += '<div id="content">'+attachment.content+'</div>';
+  }
+
+  html += '</div>';
+  
+  return html;
+}
+
 function displayErrorPage(msg, res) {
   res.render('404', { errorMsg: msg});
 }
-
-var PostTypeEnum = {
-        Plain : 0,
-        Link : 1,
-        YouTube : 2,
-        Shared : 3
-      }
 
