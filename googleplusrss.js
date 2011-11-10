@@ -92,11 +92,10 @@ function handleGooglesListResponse(serverResponse, googleListResponse, googleId)
   }
 }
 
-// This is the main function to turn googles JSON into a rss feed
 function sendRSSfeed(serverResponse, googleListResults, googleId) {
   try {
     var googleFeed = JSON.parse(googleListResults);
-    
+
     var authorName = 'Unknown';
     if (googleFeed.items.length > 0) {
       authorName = googleFeed.items[0].actor.displayName;
@@ -110,10 +109,16 @@ function sendRSSfeed(serverResponse, googleListResults, googleId) {
     });
 
     if (googleFeed.items.length > 0) {
-      getFeedItem(serverResponse, googleFeed, rssfeed, googleId, 0);
-    } else {
-      cacheAndReturnFeed(rssfeed);
+      for (var i = 0; i < googleFeed.items.length; i++) {
+        rssfeed.item({
+            title: getTitleText(googleFeed.items[i]),
+            description: getDescriptionHTML(googleFeed.items[i], i),
+            url: googleFeed.items[i].url,
+            date: googleFeed.items[i].updated
+        });
+      }
     }
+    cacheAndReturnFeed(serverResponse, rssfeed, googleId);
   } catch (ex) {
     displayErrorPage(ex.toString(), serverResponse);
   }
@@ -121,63 +126,10 @@ function sendRSSfeed(serverResponse, googleListResults, googleId) {
 
 function cacheAndReturnFeed(serverResponse, rssfeed, googleId) {
   var feedXml = rssfeed.xml();
-  cache.put(googleId, feedXml, 300000) //Cache for 5 minutes
+  cache.put(googleId, feedXml, 3600000); //Cache for 1 hour
 
   serverResponse.writeHead(200, { 'content-type': 'application/rss+xml' });
   serverResponse.end(feedXml);
-}
-
-function getFeedItem(serverResponse, googleFeed, rssfeed, googleId, index) {
-  try {
-    if (googleFeed.items.length > index) { //Add feed item and call next
-      var googleReq = https.request(
-            getGooglePlusGetOptions(googleFeed.items[index].id), 
-            function(googleGetResponse) {
-              handleGooglesGetResponse(serverResponse, googleGetResponse, 
-                    googleFeed, rssfeed, googleId, index);
-            });
-      googleReq.end();
-    } else { //At the end cache and return feed
-      cacheAndReturnFeed(serverResponse, rssfeed, googleId);
-    }
-  } catch (ex) {
-    displayErrorPage(ex.toString(), serverResponse);
-  }
-}
-
-function handleGooglesGetResponse(serverResponse, googleGetResponse, googleFeed, rssfeed, googleId, index) {
-  try {
-    var data = [];
-    googleGetResponse.on('data', function(d) {
-      data.push(d);
-    });
-    googleGetResponse.on('end', function() {
-      //output directions status code other then 200 came back from google
-      if (googleGetResponse.statusCode != 200) { 
-        displayErrorPage("Google Activity Get sent back a status code of: " + googleGetResponse.statusCode, serverResponse);
-      } else {
-        addFeedItem(serverResponse, data.join(''), googleFeed, rssfeed, googleId, index)
-      }
-    });	
-  } catch (ex) {
-    displayErrorPage(ex, serverResponse);
-  }
-}
-
-function addFeedItem(serverResponse, googleGetResponse, googleFeed, rssfeed, googleId, index) {
-  try {
-    var activity = JSON.parse(googleGetResponse);
-    //if (index == 1 ) { console.log(activity); }
-    rssfeed.item({
-        title: getTitleText(activity),
-        description: getDescriptionHTML(activity, index),
-        url: activity.url,
-        date: activity.updated
-    });
-    getFeedItem(serverResponse, googleFeed, rssfeed, googleId, index + 1);
-  } catch (ex) {
-    displayErrorPage(ex, serverResponse);
-  }
 }
 
 function getTitleText(activity) {
@@ -206,7 +158,7 @@ function getDescriptionHTML(activity, index) {
   if (activity.object.objectType == 'note') {
     html += '<div id="content">' + activity.object.content + '</div>';
     if (activity.object.attachments != undefined) {
-      for (i=0; i<activity.object.attachments.length; i++) {
+      for (var i = 0; i < activity.object.attachments.length; i++) {
         html += getAttachmentHTML(activity.object.attachments[i], i);
       }
     }
@@ -219,7 +171,7 @@ function getDescriptionHTML(activity, index) {
     html += '<div id="content">'+activity.object.content+'</div>';
 
     if (activity.object.attachments != undefined) {
-      for (i=0; i<activity.object.attachments.length; i++) {
+      for (var i = 0; i < activity.object.attachments.length; i++) {
         html += getAttachmentHTML(activity.object.attachments[i], i);
       }
     }
