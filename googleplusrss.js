@@ -143,7 +143,13 @@ function getTitleText(activity) {
     if (activity.title.length > 100) {
       return activity.title.substr(0, 97) + '...'
     } else {
-      return activity.title;
+      if (activity.title.length <= 0 && activity.object.attachments != undefined
+            && activity.object.attachments[0].displayName != undefined
+            && activity.object.attachments[0].displayName != '') {
+        return activity.object.attachments[0].displayName;
+      } else {
+        return activity.title;
+      }
     }
   }
 }
