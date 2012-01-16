@@ -38,6 +38,14 @@ app.get(/\/(\d+)$/, function(req, res){
   }
 });
 
+app.get('/PrivacyPolicy', function(req, res){
+  res.render('privacyPolicy');
+});
+
+app.get('/TermsConditions', function(req, res){
+  res.render('termsOfUse');
+});
+
 app.get('*', function(req, res){
   res.render('index');
 });
