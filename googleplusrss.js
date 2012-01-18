@@ -61,7 +61,7 @@ function getGooglePlusListOptions(googleId) {
   return {
           host: 'www.googleapis.com',
           port: 443,
-          path: '/plus/v1/people/'+googleId+'/activities/public?key=AIzaSyBx1DExRwKKMsyjNyfO-5LVzBnaTSVSmp8&maxResults=15',
+          path: '/plus/v1/people/'+googleId+'/activities/public?key=AIzaSyA6bp8TapRdhH30mISqk-GZv1aoXWY_VsE&maxResults=15',
           method: 'GET',
           headers: {
             'Connection':'keep-alive'
@@ -73,7 +73,7 @@ function getGooglePlusGetOptions(activityId) {
   return {
           host: 'www.googleapis.com',
           port: 443,
-          path: '/plus/v1/activities/'+activityId+'?key=AIzaSyBx1DExRwKKMsyjNyfO-5LVzBnaTSVSmp8',
+          path: '/plus/v1/activities/'+activityId+'?key=AIzaSyA6bp8TapRdhH30mISqk-GZv1aoXWY_VsE',
           method: 'GET',
           headers: {
             'Connection':'keep-alive'
