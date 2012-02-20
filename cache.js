@@ -5,12 +5,17 @@ var cache = {}
 function now() { return (new Date).getTime(); }
 
 exports.put = function(key, value, time) {
-  fs.writeFile('cache/' + key, value, function (err) {
+  fs.stat('cache', function (err, stats) {
     if (err) {
-      console.log('Error on set:' + err);
-    } else {
-      cache[key] = {expire: time + now()}
+      fs.mkdirSync('cache')
     }
+    fs.writeFile('cache/' + key, value, function (err) {
+      if (err) {
+        console.log('Error on set:' + err);
+      } else {
+        cache[key] = {expire: time + now()}
+      }
+    });
   });
 }
 
