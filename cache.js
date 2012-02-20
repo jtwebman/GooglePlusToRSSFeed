@@ -7,7 +7,7 @@ function now() { return (new Date).getTime(); }
 exports.put = function(key, value, time) {
   fs.writeFile('cache/' + key, value, function (err) {
     if (err) {
-      console.log('Error on set:' err);
+      console.log('Error on set:' + err);
     } else {
       cache[key] = {expire: time + now()}
     }
@@ -26,7 +26,7 @@ exports.get = function(key) {
     if (isNaN(data.expire) || data.expire >= now()) {
       fs.readFile('cache/' + key, function (err, filedata) {
         if (err) {
-          console.log('Error on get:' err);
+          console.log('Error on get:' + err);
           return null;
         } else {
           return filedata;
