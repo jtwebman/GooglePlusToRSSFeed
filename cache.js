@@ -7,7 +7,7 @@ function now() { return (new Date).getTime(); }
 exports.put = function(key, value, time) {
   fs.stat('cache', function (err, stats) {
     if (err) {
-      fs.mkdirSync('cache')
+      fs.mkdirSync('cache', 0777)
     }
     fs.writeFile('cache/' + key, value, function (err) {
       if (err) {
