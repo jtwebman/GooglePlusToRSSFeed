@@ -1,75 +1,33 @@
-/*
-Author: Paul Tarjan
-Source: https://github.com/ptarjan/node-cache
-
-*/
 var sys = require('sys');
+var fs = require('fs');
 
 var cache = {}
 function now() { return (new Date).getTime(); }
-var debug = false;
-var hitCount = 0;
-var missCount = 0;
 
 exports.put = function(key, value, time) {
-  if (debug) sys.puts('caching: '+key+' = '+value+' (@'+time+')');
-  var expire = time + now();
-  cache[key] = {value: value, expire: expire}
-
-  // clean up space
-  if (!isNaN(expire)) {
-    setTimeout(function() {
-      exports.del(key);
-    }, expire);
-  }
+  fs.writeFile('cache/' + key, value, function (err) {
+    if (err) throw err;
+    cache[key] = {expire: time + now()}
+  });
 }
 
 exports.del = function(key) {
-  delete cache[key];
+  fs.unlink('cache/' + key, function (err) {
+    delete cache[key];
+  });
 }
 
 exports.get = function(key) {
   var data = cache[key];
   if (typeof data != "undefined") {
     if (isNaN(data.expire) || data.expire >= now()) {
-	  if (debug) hitCount++;
-      return data.value;
+      fs.readFile('cache/' + key, function (err, filedata) {
+        if (err) throw err;
+        return filedata;
+      });
     } else {
-      // free some space
-      if (debug) missCount++;
       exports.del(key);
     }
   }
   return null;
-}
-
-exports.size = function() { 
-  var size = 0, key;
-  for (key in cache) {
-    if (cache.hasOwnProperty(key)) 
-      if (exports.get(key) !== null)
-        size++;
-  }
-  return size;
-}
-
-exports.memsize = function() { 
-  var size = 0, key;
-  for (key in cache) {
-    if (cache.hasOwnProperty(key)) 
-      size++;
-  }
-  return size;
-}
-
-exports.debug = function(bool) {
-  debug = bool;
-}
-
-exports.hits = function() {
-	return hitCount;
-}
-
-exports.misses = function() {
-	return missCount;
 }
