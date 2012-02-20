@@ -6,8 +6,11 @@ function now() { return (new Date).getTime(); }
 
 exports.put = function(key, value, time) {
   fs.writeFile('cache/' + key, value, function (err) {
-    if (err) throw err;
-    cache[key] = {expire: time + now()}
+    if (err) {
+      console.log(err);
+    } else {
+      cache[key] = {expire: time + now()}
+    }
   });
 }
 
@@ -22,8 +25,12 @@ exports.get = function(key) {
   if (typeof data != "undefined") {
     if (isNaN(data.expire) || data.expire >= now()) {
       fs.readFile('cache/' + key, function (err, filedata) {
-        if (err) throw err;
-        return filedata;
+        if (err) {
+          console.log(err);
+          return null;
+        } else {
+          return filedata;
+        }
       });
     } else {
       exports.del(key);
