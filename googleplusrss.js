@@ -9,6 +9,8 @@ var analitics = require('./analitics');
 
 var app = require('express').createServer();
 
+cache.setup();
+
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 

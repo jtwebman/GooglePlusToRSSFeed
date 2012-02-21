@@ -1,45 +1,41 @@
 var sys = require('sys');
 var fs = require('fs');
 
-var cache = {}
 function now() { return (new Date).getTime(); }
+var timeout = 3600000; //Miliseconds in a hour
 
-exports.put = function(key, value, time) {
+exports.setup = function(cb) {
   fs.stat('cache', function (err, stats) {
     if (err) {
-      fs.mkdirSync('cache', 0777)
+      fs.mkdirSync('cache', 0777);
     }
-    fs.writeFile('cache/' + key, value, function (err) {
-      if (err) {
-        console.log('Error on set:' + err);
-      } else {
-        cache[key] = {expire: time + now()}
-      }
-    });
   });
 }
 
-exports.del = function(key) {
-  fs.unlink('cache/' + key, function (err) {
-    delete cache[key];
+exports.put = function(key, value) {
+  fs.writeFile('cache/' + key, value, function (err) {
+    if (err) {
+      console.log('Error on set:' + err);
+    }
   });
 }
 
 exports.get = function(key) {
-  var data = cache[key];
-  if (typeof data != "undefined") {
-    if (isNaN(data.expire) || data.expire >= now()) {
-      fs.readFile('cache/' + key, function (err, filedata) {
-        if (err) {
-          console.log('Error on get:' + err);
-          return null;
-        } else {
-          return filedata;
-        }
-      });
+  fs.stat('cache', function (err, stats) {
+    if (err) {
+      return null;
     } else {
-      exports.del(key);
+      if (stats.mtime.getTime() + timeout < now()) {
+        return null;
+      } else {
+        fs.readFile('cache/' + key, function (err, filedata) {
+          if (err) {
+            return null;
+          } else {
+            return filedata;
+          }
+        });
+      }
     }
-  }
-  return null;
+  });
 }
