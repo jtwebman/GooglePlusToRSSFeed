@@ -137,7 +137,7 @@ function sendRSSfeed(serverResponse, googleListResults, googleId) {
 
 function cacheAndReturnFeed(serverResponse, rssfeed, googleId) {
   var feedXml = rssfeed.xml();
-  cache.put(googleId, feedXml, 3600000); //Cache for 1 hour
+  cache.put(googleId, feedXml); //Cache for 1 hour
 
   serverResponse.writeHead(200, { 'content-type': 'application/rss+xml' });
   serverResponse.end(feedXml);
