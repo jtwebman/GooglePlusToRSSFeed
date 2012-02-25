@@ -15,9 +15,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 app.configure(function(){
-  //app.use(express.logger());
   app.use(express.static(__dirname + '/static'));
-  //app.use(express.errorHandler({ dumbExceptions: true, showStack: true }));
 });
 
 
@@ -92,7 +90,7 @@ function handleGooglesListResponse(serverResponse, googleListResponse, googleId)
     googleListResponse.on('end', function() {
       //output directions status code other then 200 came back from google
       if (googleListResponse.statusCode != 200) { 
-        console.log(data.join(''));
+        //console.log(data.join(''));
         displayErrorPage("Google Activity List sent back a status code of: " + googleListResponse.statusCode, serverResponse);
       } else {
         sendRSSfeed(serverResponse, data.join(''), googleId)

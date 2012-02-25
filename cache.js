@@ -15,7 +15,7 @@ exports.setup = function(cb) {
 exports.put = function(key, value) {
   fs.writeFile('cache/' + key, value, function (err) {
     if (err) {
-      console.log('Error on set:' + err);
+      //console.log('Error on set:' + err);
     }
   });
 }
